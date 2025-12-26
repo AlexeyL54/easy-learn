@@ -1,4 +1,4 @@
-#include "Activation.hpp"
+#include "../include/Activation.h"
 #include <cmath>
 
 // Вспомогательные функции активации
