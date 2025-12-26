@@ -75,15 +75,6 @@ The `SequentialModel` class manages a sequence of layers and provides:
 | Tanh | (-1, 1) | Xavier/Glorot | 1 - f(x)² |
 | ReLU | [0, ∞) | He | 0 if x≤0, 1 if x>0 |
 
-## 📊 XOR Problem Results
-
-The framework successfully learns the XOR function with all three architectures:
-
-| Architecture | Layers | Learning Rate | Target Output | Epochs |
-|--------------|--------|---------------|---------------|--------|
-| Sigmoid | Sigmoid(2,4) → Sigmoid(4,1) | 0.5 | [0, 1] | 1000 |
-| Tanh | Tanh(2,4) → Tanh(4,1) | 0.1 | [-1, 1] | 1000 |
-| Mixed | ReLU(2,4) → Sigmoid(4,1) | 0.1 | [0, 1] | 1000 |
 
 ## 🛠️ Usage Example
 
