@@ -1,7 +1,4 @@
-#pragma once
-
 #include "../include/SequentialModel.h"
-#include <cstddef>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -9,17 +6,17 @@
 using std::vector;
 
 /*
- * @brief Добавить слой в модель
- * @param layer указатель на объкт слоя
+ * @brief Add a layer to the model
+ * @param layer pointer to a layer object
  */
 void SequentialModel::addLayer(std::unique_ptr<Layer> layer) {
   layers.push_back(std::move(layer));
 }
 
 /*
- * @brief Получить выходное значение модели (предсказание)
- * @param input входные данные (признаки)
- * @return выходное значение
+ * @brief Get the model's output (prediction)
+ * @param input input data (features)
+ * @return output value
  */
 vector<double> SequentialModel::predict(const vector<double> &input) {
   vector<double> activation = input;
@@ -31,11 +28,11 @@ vector<double> SequentialModel::predict(const vector<double> &input) {
 }
 
 /*
- * @brief Обучить модель
- * @param input входные данные (признаки)
- * @param target образцовые выходные данные
- * @param learning_rate скорость обученя
- * @return ошибка
+ * @brief Train the model
+ * @param input input data (features)
+ * @param target expected output data
+ * @param learning_rate learning rate
+ * @return error
  */
 double SequentialModel::train(const vector<double> &input,
                               const vector<double> &target,
@@ -45,19 +42,19 @@ double SequentialModel::train(const vector<double> &input,
   vector<double> output = predict(input);
   vector<double> gradient(output.size());
 
-  // Вычислить ошибку MSE
+  // Calculate MSE
   for (size_t i = 0; i < output.size(); i++) {
     error = output[i] - target[i];
     loss += error * error;
   }
   loss /= output.size();
 
-  // Вычислить градиенты
+  // Calculate gradient
   for (size_t i = 0; i < output.size(); i++) {
     gradient[i] = 2.0 * (output[i] - target[i]) / output.size();
   }
 
-  // Обратный проход и корректировка весов
+  // Perform back propagation
   for (std::reverse_iterator it = layers.rbegin(); it != layers.rend(); ++it) {
     gradient = (*it)->backward(gradient, learning_rate);
   }
@@ -65,11 +62,11 @@ double SequentialModel::train(const vector<double> &input,
 }
 
 /*
- * @brief Пройти одну эпоху обучения
- * @param inputs входные данные (признаки)
- * @param targets эталонные значения выходных данных
- * @param learning_rate скорость обучения
- * @param verbose флаг вывода информации об ошибке
+ * @brief Perform one epoch of training
+ * @param inputs input data (features)
+ * @param targets reference output values
+ * @param learning_rate learning rate
+ * @param verbose flag to output error information
  */
 void SequentialModel::train_epoch(const vector<vector<double>> &inputs,
                                   const vector<vector<double>> &targets,
@@ -81,17 +78,23 @@ void SequentialModel::train_epoch(const vector<vector<double>> &inputs,
   }
 
   if (verbose) {
-    std::cout << "Средняя ошибка за эпоху: " << total_loss / inputs.size()
+    std::cout << "Everage error for epoch: " << total_loss / inputs.size()
               << std::endl;
   }
 }
 
+/*
+ * @brief Save weights of each layer
+ */
 void SequentialModel::saveParams() {
   for (std::unique_ptr<Layer> &layer : layers) {
     layer->saveParams();
   }
 }
 
+/*
+ * @brief Initialize each layers weights in model with downloaded parameters
+ */
 void SequentialModel::downloadParams() {
   for (std::unique_ptr<Layer> &layer : layers) {
     layer->downloadParams();

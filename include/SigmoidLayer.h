@@ -1,73 +1,78 @@
 #pragma once
 
 #include "Layer.h"
-#include <cstddef>
 #include <fstream>
 #include <random>
 #include <sstream>
-#include <string>
 #include <vector>
 
 using std::vector;
 
 /*
- * @brief Реализация слоя с функцией активации sigmoida
+ * @brief Implementation of a layer with the sigmoid activation function
  */
 class SigmoidLayer : public Layer {
 
 private:
-  vector<vector<double>> weights; // веса входов для каждого нейрона слоя
-  vector<double> biases;          // смещения для каждого нейрона
-  vector<double> last_input;      // последние входные данные
-  vector<double> last_output;     // последние выходные данные
-  vector<double> last_z;          // взвешенная сумма
-  int input_size;
-  int output_size;
-  std::string config_name;
+  vector<vector<double>>
+      weights;                // weights for each input of each neuron in layer
+  vector<double> biases;      // biases for each neuron
+  vector<double> last_input;  // last input data
+  vector<double> last_output; // last output data
+  vector<double> last_z;      // weighted sum
+  int input_size;             // size of input data
+  int output_size;            // number of neurons in layer
+  std::string config_name;    // path of file to save weights
 
 public:
   SigmoidLayer(int input, int neurons, std::string file_name);
 
-  void saveParams() override;
-
-  void downloadParams() override;
-
   /*
-   * @brief Осуществить прямой проход
-   * @param input выходные данные (сигналы аксонов) предыдущих нейронов
-   * @return выходные данные этого слоя
+   * @brief Perform forward propagation
+   * @param input output data (axon signals) from previous neurons
+   * @return output data of this layer
    */
   vector<double> forward(const vector<double> &input) override;
 
   /*
-   * @brief Осуществить обратный проход (исправить веса)
-   * @param output_grads градиенты предыдущих слоев
-   * @param learning_rate скорость обучения
-   * @return градиент
+   * @brief Perform backward propagation (adjust weights)
+   * @param output_grads gradients from previous layers
+   * @param learning_rate learning rate
+   * @return gradient
    */
-  std::vector<double> backward(const std::vector<double> &output_gradient,
-                               double learning_rate) override;
+  vector<double> backward(const vector<double> &output_gradient,
+                          double learning_rate) override;
 
   /*
-   * @brief Получить значения весов в слое
-   * @return веса
+   * @brief Save weights to a file
+   */
+  void saveParams() override;
+
+  /*
+   * @brief Initialize weights with download parameters form a file
+   */
+  void downloadParams() override;
+
+  /*
+   * @brief Get weight values in the layer
+   * @return weights
    */
   vector<vector<double>> getWeights() const override;
 
   /*
-   * @brief Задать весам новое значение
+   * @brief Set new values for weights
    */
   void setWeights(const vector<vector<double>> &new_weights) override;
 
   /*
-   * @brief Получить количество входящих связей
-   * @return количество входящий связей
+   * @brief Get the number of input connections
+   * @return number of input connections
    */
   int getInputSize() const override;
 
   /*
-   * @brief Получить количество исходящий связей
-   * @return количество исходящих связей
+   * @brief Get the number of output connections
+   * @return number of output connections
    */
   int getOutputSize() const override;
 };

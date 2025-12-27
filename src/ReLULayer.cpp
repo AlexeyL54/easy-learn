@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../include/ReLULayer.h"
 #include <cstdio>
 #include <fstream>
@@ -14,7 +12,7 @@ ReLULayer::ReLULayer(int input, int neurons, std::string file_name) {
   output_size = neurons;
   config_name = file_name;
 
-  // Инициализация весов методом He
+  // He weights initialization
   std::random_device rd;
   std::mt19937 gen(rd());
   double stddev = std::sqrt(2.0 / input_size);
@@ -30,6 +28,69 @@ ReLULayer::ReLULayer(int input, int neurons, std::string file_name) {
   }
 }
 
+/*
+ * @brief Perform forward propagation
+ * @param input output data (axon signals) from previous neurons
+ * @return output data of this layer
+ */
+vector<double> ReLULayer::forward(const std::vector<double> &input) {
+  last_input = input;
+  int output_size = weights.size();
+  vector<double> output(output_size);
+  last_z.resize(output_size);
+
+  // for each output
+  for (int i = 0; i < output_size; i++) {
+    last_z[i] = biases[i];
+
+    // for each input
+    for (size_t j = 0; j < input.size(); j++) {
+      last_z[i] += input[j] * weights[i][j];
+    }
+
+    // ReLU activation
+    output[i] = std::max(0.0, last_z[i]);
+  }
+
+  last_output = output;
+  return output;
+}
+
+/*
+ * @brief Perform backward propagation (adjust weights)
+ * @param output_grads gradients from previous layers
+ * @param learning_rate learning rate
+ * @return gradient
+ */
+vector<double> ReLULayer::backward(const std::vector<double> &output_gradient,
+                                   double learning_rate) {
+  int input_size = last_input.size();
+  int output_size = weights.size();
+  std::vector<double> input_gradient(input_size, 0.0);
+
+  // Compute gradient with respect to the weighted sum (z)
+  std::vector<double> z_gradient(output_size);
+  for (int i = 0; i < output_size; i++) {
+    double activation_derivative = last_z[i] > 0 ? 1.0 : 0.0;
+    z_gradient[i] = output_gradient[i] * activation_derivative;
+  }
+
+  // Compute gradients for weights and update them
+  for (int i = 0; i < output_size; i++) {
+    for (int j = 0; j < input_size; j++) {
+      double weight_gradient = z_gradient[i] * last_input[j];
+      weights[i][j] -= learning_rate * weight_gradient;
+      input_gradient[j] += z_gradient[i] * weights[i][j];
+    }
+    biases[i] -= learning_rate * z_gradient[i];
+  }
+
+  return input_gradient;
+}
+
+/*
+ * @brief Save weights to a file
+ */
 void ReLULayer::saveParams() {
   std::ofstream file(config_name);
 
@@ -51,6 +112,9 @@ void ReLULayer::saveParams() {
   }
 }
 
+/*
+ * @brief Initialize weights with download parameters form a file
+ */
 void ReLULayer::downloadParams() {
   std::string line;
   double value;
@@ -63,10 +127,9 @@ void ReLULayer::downloadParams() {
     std::getline(file, line);
     output_size = std::stoi(line);
 
-    // ИНИЦИАЛИЗИРУЕМ ВЕКТОР ПРАВИЛЬНЫМ РАЗМЕРОМ ПЕРЕД ЧТЕНИЕМ
     weights.resize(output_size, std::vector<double>(input_size));
 
-    // Чтение весов
+    // Read weights
     for (int i = 0; i < output_size; i++) {
       std::getline(file, line);
       std::stringstream s(line);
@@ -76,7 +139,7 @@ void ReLULayer::downloadParams() {
         row_weights.push_back(value);
       }
 
-      // ПРОВЕРКА РАЗМЕРА
+      // Check size
       if (row_weights.size() != static_cast<size_t>(input_size)) {
         throw std::runtime_error("Weight size mismatch in SigmoidLayer");
       }
@@ -84,10 +147,9 @@ void ReLULayer::downloadParams() {
       weights[i] = row_weights;
     }
 
-    // ИНИЦИАЛИЗИРУЕМ СМЕЩЕНИЯ
     biases.resize(output_size);
 
-    // Чтение смещений
+    // Read biases
     std::getline(file, line);
     std::stringstream s(line);
     vector<double> loaded_biases;
@@ -96,7 +158,7 @@ void ReLULayer::downloadParams() {
       loaded_biases.push_back(value);
     }
 
-    // ПРОВЕРКА РАЗМЕРА
+    // Check size
     if (loaded_biases.size() != static_cast<size_t>(output_size)) {
       throw std::runtime_error("Bias size mismatch in SigmoidLayer");
     }
@@ -107,87 +169,26 @@ void ReLULayer::downloadParams() {
 }
 
 /*
- * @brief Осуществить прямой проход
- * @param input выходные данные (сигналы аксонов) предыдущих нейронов
- * @return выходные данные этого слоя
- */
-vector<double> ReLULayer::forward(const std::vector<double> &input) {
-  last_input = input;
-  int output_size = weights.size();
-  vector<double> output(output_size);
-  last_z.resize(output_size);
-
-  // для каждого выхода
-  for (int i = 0; i < output_size; i++) {
-    last_z[i] = biases[i];
-
-    // для каждого входа
-    for (size_t j = 0; j < input.size(); j++) {
-      last_z[i] += input[j] * weights[i][j];
-    }
-    // ReLU активация
-    output[i] = std::max(0.0, last_z[i]);
-  }
-
-  last_output = output;
-  return output;
-}
-
-/*
- * @brief Осуществить обратный проход (исправить веса)
- * @param output_grads градиенты предыдущих слоев
- * @param learning_rate скорость обучения
- * @return градиент
- */
-vector<double> ReLULayer::backward(const std::vector<double> &output_gradient,
-                                   double learning_rate) {
-  int input_size = last_input.size();
-  int output_size = weights.size();
-  std::vector<double> input_gradient(input_size, 0.0);
-
-  // Вычисляем градиент относительно взвешенной суммы (z)
-  std::vector<double> z_gradient(output_size);
-  for (int i = 0; i < output_size; i++) {
-    double activation_derivative = last_z[i] > 0 ? 1.0 : 0.0;
-    z_gradient[i] = output_gradient[i] * activation_derivative;
-  }
-
-  // Вычисляем градиенты для весов и обновляем их
-  for (int i = 0; i < output_size; i++) {
-
-    for (int j = 0; j < input_size; j++) {
-
-      double weight_gradient = z_gradient[i] * last_input[j];
-      weights[i][j] -= learning_rate * weight_gradient;
-      input_gradient[j] += z_gradient[i] * weights[i][j];
-    }
-    biases[i] -= learning_rate * z_gradient[i];
-  }
-
-  return input_gradient;
-}
-
-/*
- * @brief Получить значения весов в слое
- * @return веса
+ * @brief Get weight values in the layer
+ * @return weights
  */
 vector<vector<double>> ReLULayer::getWeights() const { return weights; }
 
 /*
- * @brief Задать весам новое значение
+ * @brief Set new values for weights
  */
 void ReLULayer::setWeights(const vector<vector<double>> &new_weights) {
   weights = new_weights;
 }
 
 /*
- * @brief Получить количество входящих связей
- * @return количество входящий связей
+ * @brief get the number of input connections
+ * @return number of input connections
  */
 int ReLULayer::getInputSize() const { return weights[0].size(); }
 
 /*
- * @brief Получить количество исходящий связей
- * @return количество исходящих связей
+ * @brief Get the number of output connections
+ * @return number of output connections
  */
 int ReLULayer::getOutputSize() const { return weights.size(); };

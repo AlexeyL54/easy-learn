@@ -1,7 +1,8 @@
 #pragma once
 
-// Вспомогательные функции активации
+// Helper activation functions
 namespace activation {
+
 double sigmoid(double x);
 
 double sigmoid_derivative(double x);
