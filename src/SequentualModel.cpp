@@ -5,9 +5,16 @@
 
 using std::vector;
 
+SequentialModel::SequentialModel(vector<std::unique_ptr<Layer>> layers_vec,
+                                 std::unique_ptr<Loss> loss_function,
+                                 int total_epochs, float learning_rate)
+
+    : layers(std::move(layers_vec)), loss_func(std::move(loss_function)),
+      epochs(total_epochs), lr(learning_rate) {}
+
 /*
  * @brief Add a layer to the model
- * @param layer pointer to a layer object
+ * @param layer - pointer to a layer object
  */
 void SequentialModel::addLayer(std::unique_ptr<Layer> layer) {
   layers.push_back(std::move(layer));
@@ -15,8 +22,8 @@ void SequentialModel::addLayer(std::unique_ptr<Layer> layer) {
 
 /*
  * @brief Get the model's output (prediction)
- * @param input input data (features)
- * @return output value
+ * @param input - input data (features)
+ * @return output - value
  */
 vector<double> SequentialModel::predict(const vector<double> &input) {
   vector<double> activation = input;
@@ -28,58 +35,36 @@ vector<double> SequentialModel::predict(const vector<double> &input) {
 }
 
 /*
- * @brief Train the model
- * @param input input data (features)
- * @param target expected output data
- * @param learning_rate learning rate
- * @return error
+ * @brief Perform back propagation
  */
-double SequentialModel::train(const vector<double> &input,
-                              const vector<double> &target,
-                              const double learning_rate) {
-  double loss = 0.0;
-  double error = 0.0;
-  vector<double> output = predict(input);
-  vector<double> gradient(output.size());
+void SequentialModel::backward() {
+  vector<double> gradient = loss_func->computeGrad();
 
-  // Calculate MSE
-  for (size_t i = 0; i < output.size(); i++) {
-    error = output[i] - target[i];
-    loss += error * error;
-  }
-  loss /= output.size();
-
-  // Calculate gradient
-  for (size_t i = 0; i < output.size(); i++) {
-    gradient[i] = 2.0 * (output[i] - target[i]) / output.size();
-  }
-
-  // Perform back propagation
   for (std::reverse_iterator it = layers.rbegin(); it != layers.rend(); ++it) {
-    gradient = (*it)->backward(gradient, learning_rate);
+    gradient = (*it)->backward(gradient, lr);
   }
-  return loss;
 }
 
 /*
  * @brief Perform one epoch of training
- * @param inputs input data (features)
- * @param targets reference output values
- * @param learning_rate learning rate
- * @param verbose flag to output error information
+ * @param inputs - input data (features)
+ * @param targets - reference output values
  */
-void SequentialModel::train_epoch(const vector<vector<double>> &inputs,
-                                  const vector<vector<double>> &targets,
-                                  double learning_rate, bool verbose) {
-  double total_loss = 0.0;
+void SequentialModel::train(const vector<vector<double>> &inputs,
+                            const vector<vector<double>> &targets) {
+  for (int epoch = 1; epoch <= epochs; epoch++) {
 
-  for (size_t i = 0; i < inputs.size(); i++) {
-    total_loss += train(inputs[i], targets[i], learning_rate);
-  }
+    double loss = 0.0;
 
-  if (verbose) {
-    std::cout << "Everage error for epoch: " << total_loss / inputs.size()
-              << std::endl;
+    for (int i = 0; i < inputs.size(); i++) {
+      vector<double> output = predict(inputs[i]);
+      loss += loss_func->computeLoss(output, targets[i]);
+      backward();
+    }
+
+    if (epoch % (epochs / 10) == 0)
+      std::cout << "Average loss for epoch " << epoch << " = "
+                << loss / inputs[0].size() << std::endl;
   }
 }
 

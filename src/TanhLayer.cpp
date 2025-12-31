@@ -1,6 +1,4 @@
-#pragma once
-
-#include "../include/TanhLayer.h"
+#include "../include/layers/TanhLayer.h"
 #include <fstream>
 #include <random>
 #include <sstream>

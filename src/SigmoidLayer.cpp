@@ -1,4 +1,4 @@
-#include "../include/SigmoidLayer.h"
+#include "../include/layers/SigmoidLayer.h"
 #include <cstddef>
 #include <fstream>
 #include <random>
@@ -31,7 +31,7 @@ SigmoidLayer::SigmoidLayer(int input, int neurons, std::string file_name) {
 
 /*
  * @brief Perform forward propagation
- * @param input output data (axon signals) from previous neurons
+ * @param input output data from previous neurons
  * @return output data of this layer
  */
 vector<double> SigmoidLayer::forward(const vector<double> &input) {
@@ -46,7 +46,7 @@ vector<double> SigmoidLayer::forward(const vector<double> &input) {
     for (size_t j = 0; j < input.size(); j++) {
       last_z[i] += weights[i][j] * input[j];
     }
-    // Сигмоидная активация
+    // Sigmoid activation
     output[i] = 1.0 / (1.0 + std::exp(-last_z[i]));
   }
 
@@ -58,7 +58,7 @@ vector<double> SigmoidLayer::forward(const vector<double> &input) {
  * @brief Perform backward propagation (adjust weights)
  * @param output_grads gradients from previous layers
  * @param learning_rate learning rate
- * @return gradient
+ * @return input_gradient (gradient computed for next layer)
  */
 std::vector<double>
 SigmoidLayer::backward(const std::vector<double> &output_gradient,

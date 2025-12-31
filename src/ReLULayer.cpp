@@ -1,4 +1,4 @@
-#include "../include/ReLULayer.h"
+#include "../include/layers/ReLULayer.h"
 #include <cstdio>
 #include <fstream>
 #include <random>

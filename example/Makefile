@@ -5,5 +5,5 @@ default:
 	../src/ReLULayer.cpp \
 	../src/TanhLayer.cpp \
 	../src/Activation.cpp \
-	../include/Layer.h \
+	../src/MSE.cpp \
 	-s -O2 -o example.out

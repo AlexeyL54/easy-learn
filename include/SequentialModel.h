@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Layer.h"
+#include "layers/Layer.h"
+#include "loss/Loss.h"
 #include <cstddef>
 #include <iostream>
 #include <memory>
@@ -14,8 +15,15 @@ using std::vector;
 class SequentialModel {
 private:
   vector<std::unique_ptr<Layer>> layers;
+  std::unique_ptr<Loss> loss_func;
+  int epochs;
+  float lr;
 
 public:
+  SequentialModel(vector<std::unique_ptr<Layer>> layers,
+                  std::unique_ptr<Loss> loss_function, int total_epochs,
+                  float learning_rate);
+
   /*
    * @brief Add a layer to the model
    * @param layer pointer to a layer object
@@ -30,14 +38,19 @@ public:
   vector<double> predict(const vector<double> &input);
 
   /*
+   * @brief Perform back propagation
+   */
+  void backward();
+
+  /*
    * @brief Train the model
    * @param input input data (features)
    * @param target expected output data
    * @param learning_rate learning rate
    * @return error
    */
-  double train(const vector<double> &input, const vector<double> &target,
-               const double learning_rate);
+  void train(const vector<vector<double>> &inputs,
+             const vector<vector<double>> &targets);
 
   /*
    * @brief Perform one epoch of training
