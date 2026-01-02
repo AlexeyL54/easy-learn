@@ -18,7 +18,9 @@ TanhLayer::TanhLayer(int input, int neurons, std::string file_name) {
   std::normal_distribution<double> dist(0.0, stddev);
 
   weights.resize(output_size, std::vector<double>(input_size));
+  weight_grads.resize(output_size, std::vector<double>(input_size));
   biases.resize(output_size, 0.1);
+  bias_grads.resize(output_size, 0.1);
 
   for (int i = 0; i < output_size; i++) {
     for (int j = 0; j < input_size; j++) {
@@ -59,21 +61,32 @@ vector<double> TanhLayer::forward(const vector<double> &input) {
  * @return gradient
  */
 std::vector<double>
-TanhLayer::backward(const std::vector<double> &output_gradient,
-                    double learning_rate) {
+TanhLayer::backward(const std::vector<double> &output_gradient) {
   int input_size = last_input.size();
   int output_size = weights.size();
   std::vector<double> input_gradient(input_size, 0.0);
 
   // Compute gradient with respect to the weighted sum (z)
-  std::vector<double> z_gradient(output_size);
+  // bias gradients are equal to z gradients here
+  for (int i = 0; i < output_size; i++) {
+    double activation_derivative = 1.0 - last_output[i] * last_output[i];
+    bias_grads[i] = output_gradient[i] * activation_derivative;
+
+    for (int j = 0; j < input_size; j++) {
+      weight_grads[i][j] = bias_grads[i] * last_input[j];
+      input_gradient[j] += bias_grads[i] * weights[i][j];
+    }
+  }
+
+  // Compute gradient with respect to the weighted sum (z)
+  /*std::vector<double> z_gradient(output_size);
   for (int i = 0; i < output_size; i++) {
     double activation_derivative = 1.0 - last_output[i] * last_output[i];
     z_gradient[i] = output_gradient[i] * activation_derivative;
-  }
+  }*/
 
   // Compute gradients for weights and update them
-  for (int i = 0; i < output_size; i++) {
+  /*for (int i = 0; i < output_size; i++) {
     for (int j = 0; j < input_size; j++) {
       double weight_gradient = z_gradient[i] * last_input[j];
       weights[i][j] -= learning_rate * weight_gradient;
@@ -81,7 +94,7 @@ TanhLayer::backward(const std::vector<double> &output_gradient,
       input_gradient[j] += z_gradient[i] * weights[i][j];
     }
     biases[i] -= learning_rate * z_gradient[i];
-  }
+  }*/
 
   return input_gradient;
 }
@@ -173,10 +186,36 @@ void TanhLayer::downloadParams() {
 vector<vector<double>> TanhLayer::getWeights() const { return weights; }
 
 /*
+ * @brief Get bias values in the layer
+ * @return biases
+ */
+vector<double> TanhLayer::getBiases() const { return biases; }
+
+/*
+ * @brief Get weight gradient values of the layer
+ * @return weight gradients
+ */
+vector<vector<double>> &TanhLayer::getWeightGrads() { return weight_grads; };
+
+/*
+ * @brief Get bias gradient values of the layer
+ * @return bias gradients
+ */
+vector<double> &TanhLayer::getBiasGrads() { return bias_grads; };
+
+/*
  * @brief Set new values for weights
  */
 void TanhLayer::setWeights(const vector<vector<double>> &new_weights) {
   weights = new_weights;
+}
+
+/*
+ * @brief Set new values for biases
+ * @param new_biases new values of biases
+ */
+void TanhLayer::setBiases(const vector<double> &new_biases) {
+  biases = new_biases;
 }
 
 /*

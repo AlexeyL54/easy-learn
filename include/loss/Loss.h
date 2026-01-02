@@ -12,8 +12,8 @@ public:
 
   /*
    * @brief Check shapes and compute loss
-   * @param prediction - output value of model
-   * @param target - target value for output
+   * @param prediction output value of model
+   * @param target target value for output
    */
   virtual double computeLoss(vector<double> &prediction,
                              const vector<double> &target) = 0;

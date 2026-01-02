@@ -4,6 +4,6 @@ default:
 	../src/SigmoidLayer.cpp \
 	../src/ReLULayer.cpp \
 	../src/TanhLayer.cpp \
-	../src/Activation.cpp \
 	../src/MSE.cpp \
-	-s -O2 -o example.out
+	../src/SGD.cpp \
+	-g -o example.out

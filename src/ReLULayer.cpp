@@ -19,7 +19,9 @@ ReLULayer::ReLULayer(int input, int neurons, std::string file_name) {
   std::normal_distribution<double> dist(0.0, stddev);
 
   weights.resize(output_size, std::vector<double>(input_size));
+  weight_grads.resize(output_size, std::vector<double>(input_size));
   biases.resize(output_size, 0.1);
+  bias_grads.resize(output_size, 0.1);
 
   for (int i = 0; i < output_size; i++) {
     for (int j = 0; j < input_size; j++) {
@@ -62,14 +64,25 @@ vector<double> ReLULayer::forward(const std::vector<double> &input) {
  * @param learning_rate learning rate
  * @return gradient
  */
-vector<double> ReLULayer::backward(const std::vector<double> &output_gradient,
-                                   double learning_rate) {
+vector<double> ReLULayer::backward(const std::vector<double> &output_gradient) {
   int input_size = last_input.size();
   int output_size = weights.size();
   std::vector<double> input_gradient(input_size, 0.0);
 
   // Compute gradient with respect to the weighted sum (z)
-  std::vector<double> z_gradient(output_size);
+  // bias gradients are equal to z gradients here
+  for (int i = 0; i < output_size; i++) {
+    double activation_derivative = last_z[i] > 0 ? 1.0 : 0.0;
+    bias_grads[i] = output_gradient[i] * activation_derivative;
+
+    for (int j = 0; j < input_size; j++) {
+      weight_grads[i][j] = bias_grads[i] * last_input[j];
+      input_gradient[j] += bias_grads[i] * weights[i][j];
+    }
+  }
+
+  // Compute gradient with respect to the weighted sum (z)
+  /*std::vector<double> z_gradient(output_size);
   for (int i = 0; i < output_size; i++) {
     double activation_derivative = last_z[i] > 0 ? 1.0 : 0.0;
     z_gradient[i] = output_gradient[i] * activation_derivative;
@@ -83,7 +96,7 @@ vector<double> ReLULayer::backward(const std::vector<double> &output_gradient,
       input_gradient[j] += z_gradient[i] * weights[i][j];
     }
     biases[i] -= learning_rate * z_gradient[i];
-  }
+  }*/
 
   return input_gradient;
 }
@@ -141,7 +154,7 @@ void ReLULayer::downloadParams() {
 
       // Check size
       if (row_weights.size() != static_cast<size_t>(input_size)) {
-        throw std::runtime_error("Weight size mismatch in SigmoidLayer");
+        throw std::runtime_error("Weight size mismatch in ReLULayer");
       }
 
       weights[i] = row_weights;
@@ -160,7 +173,7 @@ void ReLULayer::downloadParams() {
 
     // Check size
     if (loaded_biases.size() != static_cast<size_t>(output_size)) {
-      throw std::runtime_error("Bias size mismatch in SigmoidLayer");
+      throw std::runtime_error("Bias size mismatch in ReLULayer");
     }
 
     biases = loaded_biases;
@@ -175,10 +188,36 @@ void ReLULayer::downloadParams() {
 vector<vector<double>> ReLULayer::getWeights() const { return weights; }
 
 /*
+ * @brief Get bias values in the layer
+ * @return biases
+ */
+vector<double> ReLULayer::getBiases() const { return biases; }
+
+/*
+ * @brief Get weight gradient values of the layer
+ * @return weight gradients
+ */
+vector<vector<double>> &ReLULayer::getWeightGrads() { return weight_grads; };
+
+/*
+ * @brief Get bias gradient values of the layer
+ * @return bias gradients
+ */
+vector<double> &ReLULayer::getBiasGrads() { return bias_grads; };
+
+/*
  * @brief Set new values for weights
  */
 void ReLULayer::setWeights(const vector<vector<double>> &new_weights) {
   weights = new_weights;
+}
+
+/*
+ * @brief Set new values for biases
+ * @param new_biases new values of biases
+ */
+void ReLULayer::setBiases(const vector<double> &new_biases) {
+  biases = new_biases;
 }
 
 /*

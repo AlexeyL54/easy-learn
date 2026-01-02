@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TANHLAYER_H
+#define TANHLAYER_H
 
 #include "Layer.h"
 #include <fstream>
@@ -14,15 +15,16 @@ using std::vector;
  */
 class TanhLayer : public Layer {
 private:
-  vector<vector<double>>
-      weights;                // weights for each input of each neuron in layer
-  vector<double> biases;      // biases for each neuron
-  vector<double> last_input;  // last input data
-  vector<double> last_output; // last output data
-  vector<double> last_z;      // weighted sum
-  int input_size;             // size of input data
-  int output_size;            // number of neurons in layer
-  std::string config_name;    // path of file to save weights
+  vector<vector<double>> weights;      // weights for each input of neuron
+  vector<vector<double>> weight_grads; // gradient with respect to weights
+  vector<double> biases;               // biases for each neuron
+  vector<double> bias_grads;           // gradients with respect to biases
+  vector<double> last_input;           // last input data
+  vector<double> last_output;          // last output data
+  vector<double> last_z;               // weighted sum
+  int input_size;                      // size of input data
+  int output_size;                     // number of neurons in layer
+  std::string config_name;             // path of file to save weights
 
 public:
   TanhLayer(int input, int neurons, std::string file_name);
@@ -40,8 +42,7 @@ public:
    * @param learning_rate learning rate
    * @return gradient
    */
-  vector<double> backward(const vector<double> &output_gradient,
-                          double learning_rate) override;
+  vector<double> backward(const vector<double> &output_gradient) override;
 
   /*
    * @brief Save weights to a file
@@ -60,9 +61,34 @@ public:
   vector<vector<double>> getWeights() const override;
 
   /*
+   * @brief Get bias values in the layer
+   * @return biases
+   */
+  vector<double> getBiases() const override;
+
+  /*
+   * @brief Get weight gradient values of the layer
+   * @return weight gradients
+   */
+  vector<vector<double>> &getWeightGrads() override;
+
+  /*
+   * @brief Get bias gradient values of the layer
+   * @return bias gradients
+   */
+  vector<double> &getBiasGrads() override;
+
+  /*
    * @brief Set new values for weights
+   * @param new_weights new values of weights
    */
   void setWeights(const vector<vector<double>> &new_weights) override;
+
+  /*
+   * @brief Set new values for biases
+   * @param new_biases new values of biases
+   */
+  void setBiases(const vector<double> &new_biases) override;
 
   /*
    * @brief Get the number of input connections
@@ -76,3 +102,5 @@ public:
    */
   int getOutputSize() const override;
 };
+
+#endif // !TANHLAYER_H

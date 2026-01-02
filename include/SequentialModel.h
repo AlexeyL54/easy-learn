@@ -1,7 +1,9 @@
-#pragma once
+#ifndef SEQUENTIALMODEL_H
+#define SEQUENTIALMODEL_H
 
 #include "layers/Layer.h"
 #include "loss/Loss.h"
+#include "optimizers/Optimizer.h"
 #include <cstddef>
 #include <iostream>
 #include <memory>
@@ -16,19 +18,13 @@ class SequentialModel {
 private:
   vector<std::unique_ptr<Layer>> layers;
   std::unique_ptr<Loss> loss_func;
+  std::unique_ptr<Optimizer> optimizer;
   int epochs;
-  float lr;
 
 public:
   SequentialModel(vector<std::unique_ptr<Layer>> layers,
-                  std::unique_ptr<Loss> loss_function, int total_epochs,
-                  float learning_rate);
-
-  /*
-   * @brief Add a layer to the model
-   * @param layer pointer to a layer object
-   */
-  void addLayer(std::unique_ptr<Layer> layer);
+                  std::unique_ptr<Loss> loss_function,
+                  std::unique_ptr<Optimizer> optimizer, int total_epochs);
 
   /*
    * @brief Get the model's output (prediction)
@@ -73,3 +69,5 @@ public:
    */
   void downloadParams();
 };
+
+#endif // !SEQUENTIALMODEL_H

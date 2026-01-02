@@ -1,5 +1,5 @@
-#ifndef LAYER_HPP
-#define LAYER_HPP
+#ifndef LAYER_H
+#define LAYER_H
 
 #include <vector>
 
@@ -26,8 +26,7 @@ public:
    * @param learning_rate learning rate
    * @return gradient
    */
-  virtual vector<double> backward(const vector<double> &output_grads,
-                                  double learning_rate) = 0;
+  virtual vector<double> backward(const vector<double> &output_grads) = 0;
   /*
    * @brief Save weights to a file
    */
@@ -45,10 +44,34 @@ public:
   virtual vector<vector<double>> getWeights() const = 0;
 
   /*
+   * @brief Get bias values in the layer
+   * @return biases
+   */
+  virtual vector<double> getBiases() const = 0;
+
+  /*
+   * @brief Get weight gradient values of the layer
+   * @return weight gradients
+   */
+  virtual vector<vector<double>> &getWeightGrads() = 0;
+
+  /*
+   * @brief Get bias gradient values of the layer
+   * @return bias gradients
+   */
+  virtual vector<double> &getBiasGrads() = 0;
+
+  /*
    * @brief Set new values for weights
    * @param new_weights new values of weights
    */
   virtual void setWeights(const vector<vector<double>> &new_weights) = 0;
+
+  /*
+   * @brief Set new values for biases
+   * @param new_biases new values of biases
+   */
+  virtual void setBiases(const vector<double> &new_biases) = 0;
 
   /*
    * @brief Get the number of input connections
@@ -63,4 +86,4 @@ public:
   virtual int getOutputSize() const = 0;
 };
 
-#endif
+#endif // !LAYER_H
