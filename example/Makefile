@@ -6,4 +6,4 @@ default:
 	../src/TanhLayer.cpp \
 	../src/MSE.cpp \
 	../src/SGD.cpp \
-	-g -o example.out
+	-s -O1 -o example.out

@@ -103,11 +103,18 @@ The `SequentialModel` class manages a sequence of layers and provides:
 ## 🛠️ Usage Example
 
 ```cpp
-#include "include/SequentialModel.h"
-#include "include/layers/SigmoidLayer.h"
-#include "include/loss/MSE.h"
-#include "include/optimizers/SGD.h"
+#include "../include/SequentialModel.h"
+
+#include "../include/layers/ReLULayer.h"
+#include "../include/layers/SigmoidLayer.h"
+#include "../include/layers/TanhLayer.h"
+
+#include "../include/loss/MSE.h"
+#include "../include/optimizers/SGD.h"
+
+#include <iostream>
 #include <memory>
+#include <ostream>
 #include <vector>
 
 std::vector<std::vector<double>> inputs = {{0, 0}, {0, 1}, {1, 0}, {1, 1}};
