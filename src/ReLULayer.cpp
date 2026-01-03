@@ -81,23 +81,6 @@ vector<double> ReLULayer::backward(const std::vector<double> &output_gradient) {
     }
   }
 
-  // Compute gradient with respect to the weighted sum (z)
-  /*std::vector<double> z_gradient(output_size);
-  for (int i = 0; i < output_size; i++) {
-    double activation_derivative = last_z[i] > 0 ? 1.0 : 0.0;
-    z_gradient[i] = output_gradient[i] * activation_derivative;
-  }
-
-  // Compute gradients for weights and update them
-  for (int i = 0; i < output_size; i++) {
-    for (int j = 0; j < input_size; j++) {
-      double weight_gradient = z_gradient[i] * last_input[j];
-      weights[i][j] -= learning_rate * weight_gradient;
-      input_gradient[j] += z_gradient[i] * weights[i][j];
-    }
-    biases[i] -= learning_rate * z_gradient[i];
-  }*/
-
   return input_gradient;
 }
 
