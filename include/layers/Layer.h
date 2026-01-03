@@ -27,6 +27,7 @@ public:
    * @return gradient
    */
   virtual vector<double> backward(const vector<double> &output_grads) = 0;
+
   /*
    * @brief Save weights to a file
    */

@@ -1,1 +1,4 @@
 example/example.out
+example/*.txt
+include/Activation.h
+src/Activation.cpp
